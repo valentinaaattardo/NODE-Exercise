@@ -1,5 +1,5 @@
 {
-  "name": "writefile",
+  "name": "express-app",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -10,6 +10,9 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "figlet": "^1.7.0"
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "express-async-errors": "^3.1.1",
+    "morgan": "^1.10.0"
   }
 }
