@@ -1,20 +1,45 @@
-
-import { createServer } from 'node:http';
-
-
-const server = createServer((request, response) => {
-    console.log('Richiesta ricevuta');
-
-   
-    response.statusCode = 200;
+import express from "express";
+import morgan from "morgan";
+import "express-async-errors";
+import dotenv from 'dotenv';
+import Joi from 'joi';
 
 
-    response.setHeader('Content-Type', 'text/html');
+dotenv.config();
+const app = express();
+const port = process.env.PORT || 3000;
 
-   
-    response.end('<html><body><h1>Questa pagina è servita con Node.js!</h1><p>Benvenuto nel mio server HTTP con moduli ES6!</p></body></html>');
-});
+app.use(express.json());
+app.use(morgan("dev"));
 
-server.listen(3000, () => {
-    console.log('Server in esecuzione su http://localhost:3000');
+let planets = [
+  {
+    id: 1,
+    name: "Earth",
+  },
+  {
+    id: 2,
+    name: "Mars",
+  },
+];
+
+import * as planetsController from './controllers/planets.js';
+
+app.get('/api/planets', planetsController.getAll)
+
+app.get("/api/planets/:id", planetsController.getOneById);
+
+let planetScheme = Joi.object({
+  id: Joi.number().integer().required(),
+  name: Joi.string().required(),
+})
+
+app.post('/api/planets', planetsController.create);
+
+app.put('/api/planets/:id', planetsController.updateById );
+
+app.delete('/api/planets/:id', planetsController.deleteById);
+
+app.listen(port, () => {
+    console.log(`Server is running on http://localhost:${port}`)
 });

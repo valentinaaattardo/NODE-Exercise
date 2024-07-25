@@ -1,6 +1,6 @@
-const express = require("express");
-const Joi = require("joi");
-const router = express.Router();
+
+import Joi from 'joi';
+
 
 let planets = [
   { id: 1, name: "Earth" },
@@ -9,55 +9,59 @@ let planets = [
 
 const planetSchema = Joi.object({
   id: Joi.number().integer().required(),
-  name: Joi.string().min(1).required(),
+  name: Joi.string().required(),
 });
 
-router.get("/api/planets", (req, res) => {
+const getAll = (req, res) => {
   res.status(200).json(planets);
-});
+};
 
-router.get("/api/planets/:id", (req, res) => {
-  const planet = planets.find((p) => p.id === parseInt(req.params.id));
-  if (!planet) return res.status(404).send("Planet not found");
-  res.status(200).json(planet);
-});
+const getOneById = (req, res) => {
+  const { id } = req.params;
+  const planetId = parseInt(id, 10);
+  const planet = planets.find((p) => p.id === planetId);
+  if (planet) {
+    res.status(200).json(planet);
+  } else {
+    res.status(404).json({ message: "Planet not found" });
+  }
+};
 
-router.post("/api/planets", (req, res) => {
+const create = (req, res) => {
   const { error } = planetSchema.validate(req.body);
-  if (error) return res.status(400).send(error.details[0].message);
+  if (error) {
+    return res.status(400).json({ message: error.details[0].message });
+  }
 
   const { id, name } = req.body;
-  const existingPlanet = planets.find((p) => p.id === id);
-  if (existingPlanet)
-    return res.status(400).send("Planet with this ID already exists");
-
   const newPlanet = { id, name };
   planets.push(newPlanet);
-  res.status(201).json({ msg: "Planet created successfully" });
-});
 
-router.put("/api/planets/:id", (req, res) => {
-  const { error } = planetSchema.validate({
-    ...req.body,
-    id: parseInt(req.params.id),
-  });
-  if (error) return res.status(400).send(error.details[0].message);
+  res.status(201).json({ message: "Planet created", newPlanet });
+};
 
-  const planet = planets.find((p) => p.id === parseInt(req.params.id));
-  if (!planet) return res.status(404).send("Planet not found");
+const updateById = (req, res) => {
+  const { id } = req.params;
+  const { name } = req.body;
 
-  planet.name = req.body.name;
-  res.status(200).json({ msg: "Planet updated successfully" });
-});
+  const planetId = parseInt(id, 10);
+  let planet = planets.find((p) => p.id === planetId);
 
-router.delete("/api/planets/:id", (req, res) => {
-  const planetIndex = planets.findIndex(
-    (p) => p.id === parseInt(req.params.id)
-  );
-  if (planetIndex === -1) return res.status(404).send("Planet not found");
+  if (!planet) {
+    return res.status(404).json({ message: "Planet not found" });
+  }
 
-  planets.splice(planetIndex, 1);
-  res.status(200).json({ msg: "Planet deleted successfully" });
-});
+  planet.name = name;
+  res.status(200).json({ message: "Planet updated", planet });
+};
 
-module.exports = router;
+const deleteById = (req, res) => {
+  const { id } = req.params;
+
+  const planetId = parseInt(id, 10);
+  planets = planets.filter((p) => p.id !== planetId);
+
+  res.status(200).json({ message: "Planet deleted", planets });
+};
+
+export { getAll, getOneById, create, updateById, deleteById };
